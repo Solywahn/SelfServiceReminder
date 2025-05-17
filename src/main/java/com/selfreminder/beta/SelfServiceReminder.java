@@ -41,7 +41,6 @@ public class SelfServiceReminder extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername(){
-        //TODO
         return "SoroushSelfServiceReminder_bot";
     }
 
