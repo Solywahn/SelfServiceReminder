@@ -1,17 +1,21 @@
 package com.selfreminder.beta;
 import com.selfreminder.beta.models.dbConnection;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SelfServiceReminder extends TelegramLongPollingBot {
     //default chat id #-1002330642857
-    //need to make a dynamic chat id system for further development
+    //need to make a dynamic Group chat id system for further development
     @Override
     public void onUpdateReceived (Update update){
         String input=update.getMessage().getText();
@@ -53,6 +57,7 @@ public class SelfServiceReminder extends TelegramLongPollingBot {
         SendMessage response=new SendMessage();
         response.setChatId(update.getMessage().getChatId().toString());
         response.setText(responseText);
+        response.setReplyToMessageId(update.getMessage().getMessageId());
         try {
             execute(response);
         }catch (TelegramApiException e){
@@ -137,19 +142,31 @@ public class SelfServiceReminder extends TelegramLongPollingBot {
 
     public void mentionAll(String announcement){
         HashMap<String,String> users=getUsers();
+        if(users.isEmpty())
+            return;
         StringBuilder mentionMessage=new StringBuilder(announcement+'\n');
-        for(Map.Entry<String,String> userList : users.entrySet())
-            mentionMessage.append("["+userList.getKey()+"](tg://user?id=")
-                    .append(userList.getValue()).append(")\n");
+        for(Map.Entry<String,String> userList : users.entrySet()){
+            mentionMessage.append(String.format("<a href=\"tg://user?id=%s\">%s</a>\n",
+                    userList.getKey(), userList.getValue()));
+        }
         SendMessage message=new SendMessage();
         //using the chat id manually, should fix this later on
-        message.setChatId("-1002330642857");
+        //message.setChatId("-1002330642857");
+        //test
+        message.setChatId("-1002352471621");
+        //
         message.setText(mentionMessage.toString());
-        message.setParseMode("MarkdownV2");
+        message.setParseMode("HTML");
         try {
-            execute(message);
+            Message sent = execute(message);
+            PinChatMessage mentionPin=new PinChatMessage();
+            mentionPin.setChatId(message.getChatId());
+            mentionPin.setMessageId(sent.getMessageId());
+            execute(mentionPin);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+        //
+
     }
 }

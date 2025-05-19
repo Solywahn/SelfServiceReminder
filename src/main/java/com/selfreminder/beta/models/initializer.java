@@ -9,7 +9,6 @@ import java.sql.Statement;
 public class initializer {
     final String dbPath="database/selfservice_db.sqlite";
     public initializer(){
-        System.out.println(dbPath);
         File dataBase=new File(dbPath);
         if(!dataBase.exists()){
             try {
