@@ -17,7 +17,7 @@ public class initializer {
                     Connection tempConnection=DriverManager.getConnection("jdbc:sqlite:" + dbPath);
                     Statement createTable=tempConnection.createStatement();
                     String tableQuery=
-                            "CREATE TABLE IF NOT EXISTS Users (userId TEXT PRIMARY KEY,userName TEXT)";
+                            "CREATE TABLE IF NOT EXISTS Users (userId TEXT PRIMARY KEY,userName TEXT,rapidMode INTEGER DEFAULT 0,hasStarted INTEGER DEFAULT 0,lastMessage TEXT)";
                     createTable.executeUpdate(tableQuery);
                 } catch (SQLException e) {
                     e.printStackTrace();

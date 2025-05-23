@@ -10,11 +10,14 @@ public class Quartz {
     public void schedule() throws SchedulerException{
         Scheduler scheduler=StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
-        JobDetail mondayJob=newJob(hourOfReckoning.class)
+        JobDetail mondayJob=newJob(HourOfReckoning.class)
                 .withIdentity("firstJob")
                 .build();
-        JobDetail wednesdayJob=newJob(hourOfTwilight.class)
+        JobDetail wednesdayJob=newJob(HourOfTwilight.class)
                 .withIdentity("secondJob")
+                .build();
+        JobDetail rapidJob=newJob(RapidReminder.class)
+                .withIdentity("rapidReminder")
                 .build();
         Trigger mondayTrigger=TriggerBuilder.newTrigger()
                 .startNow()
@@ -26,23 +29,36 @@ public class Quartz {
                 .withIdentity("Wednesday Trigger")
                 .withSchedule(CronScheduleBuilder.cronSchedule("0 0 18 ? * WED *"))
                 .build();
+        Trigger rapidTrigger=TriggerBuilder.newTrigger()
+                .startNow()
+                .withIdentity("rapid mode Trigger")
+                .withSchedule(SimpleScheduleBuilder.repeatHourlyForever(1))
+                .build();
 
 
         scheduler.scheduleJob(mondayJob,mondayTrigger);
         scheduler.scheduleJob(wednesdayJob,wednesdayTrigger);
+        scheduler.scheduleJob(rapidJob,rapidTrigger);
     }
-    public static class hourOfReckoning implements Job{
+    public static class HourOfReckoning implements Job{
         @Override
         public void execute(JobExecutionContext context){
             SelfServiceReminder sr=new SelfServiceReminder();
             sr.mentionAll("گرسنگان سلف باز شده ها فراموشتون نشه");
         }
     }
-    public static class hourOfTwilight implements Job{
+    public static class HourOfTwilight implements Job{
         @Override
         public void execute(JobExecutionContext context){
             SelfServiceReminder sr=new SelfServiceReminder();
             sr.mentionAll("گرسنگان آخرین مهلت رزرو سلف امشبه ها بجنبید");
+        }
+    }
+    public static class RapidReminder implements Job{
+        @Override
+        public void execute(JobExecutionContext context){
+            SelfServiceReminder rr=new SelfServiceReminder();
+            rr.rapidRemind();
         }
     }
 }
